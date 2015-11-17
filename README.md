@@ -30,7 +30,7 @@ Add following dependencies into your maven project:
 <dependency>
    <groupId>com.integratingfactor.idp</groupId>
    <artifactId>lib-idp-auth</artifactId>
-   <version>0.0.2-SNAPSHOT</version>
+   <version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
 
