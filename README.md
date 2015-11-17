@@ -62,6 +62,7 @@ Getting access token for a client is a 2 step process:
     * Use Http-Basic authentication using just the client id `if.test.client` (there is no password)
     * set body key/value as `grant_type` : `authorization_code`
     * set body key/value as `code` : `xxxxxx` (code from step 1)
+    * set body key/value as `redirect_uri` : `<client.redirect.url>` (same as specified in step 1)
   * above should return a response like:  
     ```
       {  
