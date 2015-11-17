@@ -27,8 +27,8 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        LOG.info("noting to do for authorization server security configurer");
-        // TODO: figure out what to do here
+        LOG.info("enabling /check_token access for all");
+        security.checkTokenAccess("permitAll()");
     }
 
     @Override
