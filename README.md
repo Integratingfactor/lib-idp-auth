@@ -13,7 +13,6 @@ This release has following 2 `@Configuration` beans:
   * grant type : `authorization_code`
   * authority : `ROLE_CLIENT`
   * scope : `read`
-  * redirect url : `http://localhost:8080`
   * resourceId : `test-resource`
 * `SecurityConfig` : this bean configures a very basic spring security profile using default configuration from Spring Security Framework and following hard coded user details:
   * username/password : `user`/`password`, roles : `USER`
@@ -50,15 +49,15 @@ Library uses Javaconfig to configure Spring Security Framework. However, followi
 ## How to get acces token from a client?
 Getting access token for a client is a 2 step process:
 * Step 1 : Request authorization code
-  * use a browser (not postman) to do a `GET http://localhost:8080/oauth/authorize?client_id=if.test.client&response_type=code` (x-www-form-urlencoded)
+  * use a browser (not postman) to do a `GET <your.server.url>/oauth/authorize?client_id=if.test.client&response_type=code&redirect_uri=<client.redirect.url>` (x-www-form-urlencoded)
   * above should redirect your browser to login page
   * use the login credentials configured with UserDetailsService (default: user/password)
-  * after user login, browser will be redirected to approval page `http://localhost:8080/oauth/authorize?client_id=if.test.client&response_type=code`
+  * after user login, browser will be redirected to approval page `<your.server.url>/oauth/authorize?client_id=if.test.client&response_type=code`
   * this is where authenticated user provides the client access authorization on their behalf
-  * once approved, browser will redirect to `http://localhost:8080/?code=\{xxxxxxxx}`
+  * once approved, browser will redirect to `<client.redirect.url>?code=\{xxxxxxxx}`
   * authorization code is the `xxxxx` from uri parameter `code` above
 * Step 2 : Get access token
-  * use postman, or similar Rest client, to do a `POST http://localhost:8080/oauth/token` with following:
+  * use postman, or similar Rest client, to do a `POST <your.server.url>/oauth/token` with following:
     * method type is POST
     * Use Http-Basic authentication using just the client id `if.test.client` (there is no password)
     * set body key/value as `grant_type` : `authorization_code`
@@ -74,7 +73,7 @@ Getting access token for a client is a 2 step process:
 
 ## How to verify access token from client's request?
 Resource servers can verify an access token as following:
-* use postman, or similar Rest client, to do a `POST htt[://localhost:8080/oauth/check_token` with following:
+* use postman, or similar Rest client, to do a `POST <your.server.url>/oauth/check_token` with following:
     * method type is POST
     * Use x-www-form-urlencoded
     * no authentication/authorization header required (if present, will be ignored)

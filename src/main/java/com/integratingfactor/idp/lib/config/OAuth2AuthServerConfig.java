@@ -40,7 +40,6 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
                 .authorizedGrantTypes("authorization_code")
                 .authorities("ROLE_CLIENT")
                 .scopes("read")
-                .redirectUris("http://localhost:8080")
                 .resourceIds("test-resource");
                 
     }
