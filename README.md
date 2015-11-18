@@ -3,7 +3,7 @@ IDP Authorization Server library
 
 This is a work in progress, to create a library that can be used to implement an OAuth2 authorization server based on Spring Security framework. We are starting from default configuration with some hard coded parameters, and then will iterate to make it more flexible and production ready.  
 
-Live version of IDP application using this library is @ [Integratingfactor.com's AAA Service](https://id-idp.appspot.com).
+Live version of IDP application using this library is @ [Integratingfactor.com's AAA Service](https://if-idp.appspot.com).
 
 # Version 0.0.1
 This is a very basic release, with default configurations and some hard coded values, to demonstrate how this library can be used to implement an authorization server.
@@ -33,10 +33,9 @@ This release has following 2 `@Configuration` beans:
 </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
-
-Library uses Javaconfig to configure Spring Security Framework. However, following minimal xml configuration is needed:
-* Security filter configuration in `web.xml` as described in Spring Security Framework Reference [Section 4.2.1 web.xml Configuration](http://docs.spring.io/spring-security/site/docs/4.0.3.RELEASE/reference/htmlsingle/#ns-web-xml)
-* Configuration bean declaration in application's context file:  
+* Library uses Javaconfig to configure Spring Security Framework. However, following minimal xml configuration is needed:
+  * Security filter configuration in `web.xml` as described in Spring Security Framework Reference [Section 4.2.1 web.xml Configuration](http://docs.spring.io/spring-security/site/docs/4.0.3.RELEASE/reference/htmlsingle/#ns-web-xml)
+  * Configuration bean declaration in application's context file:  
   ```XML
   <!-- Configure OAuth beans -->  
   <bean id="idpOAuthService" class="com.integratingfactor.idp.lib.config.OAuth2AuthServerConfig"/>  
@@ -53,7 +52,7 @@ Getting access token for a client is a 2 step process:
   * use a browser (not postman) to do a `GET <your.server.url>/oauth/authorize?client_id=if.test.client&response_type=code&redirect_uri=<client.redirect.url>` (x-www-form-urlencoded)
   * above should redirect your browser to login page
   * use the login credentials configured with UserDetailsService (default: user/password)
-  * after user login, browser will be redirected to approval page `<your.server.url>/oauth/authorize?client_id=if.test.client&response_type=code`
+  * after user login, browser will be redirected to approval page `<your.server.url>/oauth/authorize?client_id=if.test.client&response_type=code&redirect_uri=<client.redirect.url>`
   * this is where authenticated user provides the client access authorization on their behalf
   * once approved, browser will redirect to `<client.redirect.url>?code=\{xxxxxxxx}`
   * authorization code is the `xxxxx` from uri parameter `code` above
