@@ -1,7 +1,9 @@
 # lib-idp-auth
 IDP Authorization Server library  
 
-This is a work in progress, to create a library that can be used to implement an OAuth2 authorization server based on Spring Security framework. We are starting from default configuration with some hard coded parameters, and then will iterate to make it more flexible and production ready.
+This is a work in progress, to create a library that can be used to implement an OAuth2 authorization server based on Spring Security framework. We are starting from default configuration with some hard coded parameters, and then will iterate to make it more flexible and production ready.  
+
+Live version of IDP application using this library is @ [Integratingfactor.com's AAA Service](https://id-idp.appspot.com).
 
 # Version 0.0.1
 This is a very basic release, with default configurations and some hard coded values, to demonstrate how this library can be used to implement an authorization server.
@@ -19,11 +21,9 @@ This release has following 2 `@Configuration` beans:
   * username/password : `admin`/`password`, roles : `USER`, `ADMIN`
 
 ## How to implement authorization server with this release?
-Clone or download project.  
-
-Build and install project library: `mvn install`  
-
-Add following dependencies into your maven project:
+* Clone or download project.  
+* Build and install project library: `mvn install`  
+* Add following dependencies into your maven project:
 ```XML
 <!-- iF IDP Library -->
 <dependency>
@@ -32,6 +32,7 @@ Add following dependencies into your maven project:
    <version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
+* **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
 
 Library uses Javaconfig to configure Spring Security Framework. However, following minimal xml configuration is needed:
 * Security filter configuration in `web.xml` as described in Spring Security Framework Reference [Section 4.2.1 web.xml Configuration](http://docs.spring.io/spring-security/site/docs/4.0.3.RELEASE/reference/htmlsingle/#ns-web-xml)
