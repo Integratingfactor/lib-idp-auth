@@ -5,9 +5,6 @@ This is a work in progress, to create a library that can be used to implement an
 
 Live version of IDP application using this library is @ [Integratingfactor.com's AAA Service](https://if-idp.appspot.com).
 
-# Version 0.0.1
-This is a very basic release, with default configurations and some hard coded values, to demonstrate how this library can be used to implement an authorization server.
-
 ## What does this release has?
 This release has following 2 `@Configuration` beans:
 * `OAuth2AuthServerConfig` : this bean configures a very basic authorization server using default configuration from Spring Security Framework and following hard coded client details:
@@ -96,3 +93,11 @@ Resource servers can verify an access token as following:
         "client_id": "if.test.client"
       }
     ```
+
+# Revision History
+## Version 0.0.2
+Added BCrypt password encoder bean, and using the encoder for user details configuration.
+
+## Version 0.0.1
+This is a very basic release, with default configurations and some hard coded values, to demonstrate how this library can be used to implement an authorization server.
+
