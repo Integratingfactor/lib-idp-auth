@@ -112,6 +112,7 @@ public class OAuth2AuthcodeTokenGrantTest extends AbstractTestNGSpringContextTes
                 .perform(MockMvcRequestBuilders.post("/oauth/authorize").principal(auth)
                         .param(OAuth2Utils.USER_OAUTH_APPROVAL, uriForAuthcodeTokenRequest())
                         .sessionAttr("authorizationRequest", authorization))
+                // we expect a redirect to client's url with authorization code as parameter
                 .andExpect(MockMvcResultMatchers.redirectedUrlPattern("http://localhost?code=*"));
 
     }
