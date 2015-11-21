@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -115,5 +116,53 @@ public class OAuth2AuthcodeTokenGrantTest extends AbstractTestNGSpringContextTes
                 // we expect a redirect to client's url with authorization code as parameter
                 .andExpect(MockMvcResultMatchers.redirectedUrlPattern("http://localhost?code=*"));
 
+    }
+
+    @Test
+    public void testAccessTokenGrantWithoutAuthentication() throws Exception {
+
+        // perform POST to /oauth/token endpoint without client authentication
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/oauth/token"))
+                // we expect a 401 error
+                .andExpect(MockMvcResultMatchers.status().is(401));
+    }
+
+    @Test
+    public void testAccessTokenGrantWithInvalidAuthCode() throws Exception {
+        // build an authentication for client
+        GrantedAuthority authorities = new SimpleGrantedAuthority("ROLE_USER");
+        Authentication auth = new UsernamePasswordAuthenticationToken("if.test.client", "", Arrays.asList(authorities));
+
+        // perform POST to /oauth/token endpoint with authentication but incorrect auth code
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/oauth/token")
+                        .param(OAuth2Utils.CLIENT_ID, "if.test.client")
+                        .param(OAuth2Utils.GRANT_TYPE, "authorization_code")
+                        .param("code", "invalid")
+                        .principal(auth))
+                // we expect a 400 error
+                .andExpect(MockMvcResultMatchers.status().is(400));
+    }
+
+    @Test
+    public void testAccessTokenGrantWithValidAuthCode() throws Exception {
+        // get a valid authorization code from /oauth/authorize endpoint
+        String [] params = this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/oauth/authorize").principal(new UsernamePasswordAuthenticationToken("user", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))))
+                        .param(OAuth2Utils.USER_OAUTH_APPROVAL, uriForAuthcodeTokenRequest())
+                        .sessionAttr("authorizationRequest", new AuthorizationRequest(null, null, "if.test.client", null, null, null,
+                                true, null, "http://localhost", null))).andReturn().getResponse().getRedirectedUrl().split("=");
+        System.out.println("Got authorization code: " + params[1]);
+        
+        // perform POST to /oauth/token endpoint with authentication and correct auth code
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/oauth/token")
+                        .param(OAuth2Utils.CLIENT_ID, "if.test.client")
+                        .param(OAuth2Utils.GRANT_TYPE, "authorization_code")
+                        .param("code", params[1])
+                        .principal(new UsernamePasswordAuthenticationToken("if.test.client", "", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")))))
+                // we expect a 400 error
+                .andExpect(MockMvcResultMatchers.status().is(200));
     }
 }
