@@ -8,9 +8,10 @@ Live version of IDP application using this library is @ [Integratingfactor.com's
 ## What does this release has?
 This release has following 2 `@Configuration` beans:
 * `OAuth2AuthServerConfig` : this bean provides following configuration:
-  * detection and use of application provided custom ClientDetailsService bean from application context
   * configures authorization server endpoint at "/oauth/authorize" and token service endpoint at "/oauth/token"
-  * initializes a default client details service (which will get overridden by any application provided clients details service bean) with following hard coded client details:
+  * detection and use of application provided custom AuthorizationCodeServices bean from application context (otherwise default [InMemoryAuthorizationCodeServices](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/code/InMemoryAuthorizationCodeServices.html) is used)
+  * detection and use of application provided custom ClientDetailsService bean from application context. If none provided
+  then a default client details service will be initialized with following hard coded client details:
     * client id : `if.test.client`  
     * grant type : `authorization_code`  
     * authority : `ROLE_CLIENT`  
@@ -101,6 +102,9 @@ Resource servers can verify an access token as following:
     ```
 
 # Revision History
+## Version 0.0.5
+Added support for using custom application provided authorization code service from application context.
+
 ## Version 0.0.4
 Added unit tests to demonstrate use of custom application provided client details service from application context.
 
