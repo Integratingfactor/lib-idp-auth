@@ -33,8 +33,10 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        LOG.info("Using in-memory clients details service with hard coded end point");
+        LOG.info("adding a default in-memory clients details service with hard coded end point");
         // use in-memory clients details service with 1 hard coded client
+        // however, this will get overridden by any ClientDetailsService bean
+        // present in the application context
         clients.inMemory()
             .withClient("if.test.client")
                 .authorizedGrantTypes("authorization_code")
