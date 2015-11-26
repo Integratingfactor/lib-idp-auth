@@ -161,7 +161,7 @@ public class CustomClientDetailsTest extends AbstractTestNGSpringContextTests {
                         .param(OAuth2Utils.GRANT_TYPE, "authorization_code").param("code", params[1])
                         .principal(new UsernamePasswordAuthenticationToken(testClientId, testClientSecret,
                                 Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")))))
-                // we expect a 400 error
+                // we expect a 200 success
                 .andExpect(MockMvcResultMatchers.status().is(200));
     }
 }
