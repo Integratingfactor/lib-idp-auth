@@ -7,12 +7,15 @@ Live version of IDP application using this library is @ [Integratingfactor.com's
 
 ## What does this release has?
 This release has following 2 `@Configuration` beans:
-* `OAuth2AuthServerConfig` : this bean configures a very basic authorization server using default configuration from Spring Security Framework and following hard coded client details:
-  * client id : `if.test.client`
-  * grant type : `authorization_code`
-  * authority : `ROLE_CLIENT`
-  * scope : `read`
-  * resourceId : `test-resource`
+* `OAuth2AuthServerConfig` : this bean provides following configuration:
+  * detection and use of application provided custom ClientDetailsService bean from application context
+  * configures authorization server endpoint at "/oauth/authorize" and token service endpoint at "/oauth/token"
+  * initializes a default client details service (which will get overridden by any application provided clients details service bean) with following hard coded client details:
+    * client id : `if.test.client`  
+    * grant type : `authorization_code`  
+    * authority : `ROLE_CLIENT`  
+    * scope : `read`  
+    * resourceId : `test-resource`  
 * `SecurityConfig` : this bean provides following configurations:
   * a bean reference to [BCryptPasswordEncoder](http://docs.spring.io/spring-security/site/docs/3.2.9.RELEASE/apidocs/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html) that will be used by authentication manager for password encryption and matching
   * detection and use of application provided custom UserDetailsService bean from application context
@@ -98,6 +101,9 @@ Resource servers can verify an access token as following:
     ```
 
 # Revision History
+## Version 0.0.4
+Added unit tests to demonstrate use of custom application provided client details service from application context.
+
 ## Version 0.0.3
 Added support for using custom application specific user details service if provided in the application context.
 
