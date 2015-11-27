@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.util.OAuth2Utils;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
@@ -21,6 +22,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -29,6 +31,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integratingfactor.idp.lib.config.OAuth2AuthServerConfig;
 import com.integratingfactor.idp.lib.config.SecurityConfig;
 
@@ -156,12 +159,26 @@ public class CustomClientDetailsTest extends AbstractTestNGSpringContextTests {
 
         // perform POST to /oauth/token endpoint with authentication and correct
         // auth code
-        this.mockMvc
+        ResultActions result = this.mockMvc
                 .perform(MockMvcRequestBuilders.post("/oauth/token").param(OAuth2Utils.CLIENT_ID, testClientId)
                         .param(OAuth2Utils.GRANT_TYPE, "authorization_code").param("code", params[1])
                         .principal(new UsernamePasswordAuthenticationToken(testClientId, testClientSecret,
                                 Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")))))
                 // we expect a 200 success
                 .andExpect(MockMvcResultMatchers.status().is(200));
+        String response = result.andReturn().getResponse().getContentAsString();
+        System.out.println("Got response: " + response);
+        OAuth2AccessToken token = new ObjectMapper().readValue(response, OAuth2AccessToken.class);
+        
+        // perform another POST to /oauth/token endpoint for refresh token
+        result = this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/oauth/token").param(OAuth2Utils.CLIENT_ID, testClientId)
+                        .param(OAuth2Utils.GRANT_TYPE, "refresh_token").param("refresh_token", token.getRefreshToken().getValue())
+                        .principal(new UsernamePasswordAuthenticationToken(testClientId, testClientSecret,
+                                Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")))))
+                // we expect a 200 success
+                .andExpect(MockMvcResultMatchers.status().is(200));
+        System.out.println("Got response: " + result.andReturn().getResponse().getContentAsString());
+        
     }
 }
