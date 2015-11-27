@@ -71,7 +71,7 @@ public class CustomClientDetailsTest extends AbstractTestNGSpringContextTests {
         BaseClientDetails client = new BaseClientDetails();
         client.setClientId(testClientId);
         client.setScope(Arrays.asList("read"));
-        client.setAuthorizedGrantTypes(Arrays.asList("authorization_code"));
+        client.setAuthorizedGrantTypes(Arrays.asList("authorization_code", "refresh_token"));
         // client.setClientSecret(testClientSecret);
         testClients.addClient(client);
     }
