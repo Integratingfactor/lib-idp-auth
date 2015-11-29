@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 
 @Configuration
 @EnableAuthorizationServer
@@ -30,6 +31,8 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
     private AuthenticationManager authenticationManager;
 
     AuthorizationCodeServices authCodeService;
+    
+    TokenStore tokenStore;
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
@@ -59,6 +62,11 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
         if (authCodeService != null) {
             endpoints.authorizationCodeServices(authCodeService);
         }
+
+		// use application's token store if provided
+		if (tokenStore != null) {
+			endpoints.tokenStore(tokenStore);
+		}
     }
 
     @Override
@@ -72,5 +80,15 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
         } catch (Exception e) {
             LOG.info("Caught exception: " + e.getMessage());
         }
+
+		tokenStore = null;
+		try {
+			tokenStore = ctx.getBean(TokenStore.class);
+			LOG.info("Using custom application provided token store: " + tokenStore.toString());
+		} catch (BeansException e) {
+			LOG.info("No custom application provided token store: " + e.getMessage());
+		} catch (Exception e) {
+			LOG.info("Caught exception: " + e.getMessage());
+		}
     }
 }

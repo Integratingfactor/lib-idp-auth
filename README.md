@@ -17,6 +17,7 @@ This release has following 2 `@Configuration` beans:
     * authority : `ROLE_CLIENT`  
     * scope : `read`  
     * resourceId : `test-resource`  
+  * detection and use of application provided implementation of [TokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/TokenStore.html) service from application context. If none provided then a default token store [InMemoryTokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/store/InMemoryTokenStore.html) is used.  
 * `SecurityConfig` : this bean provides following configurations:
   * a bean reference to [BCryptPasswordEncoder](http://docs.spring.io/spring-security/site/docs/3.2.9.RELEASE/apidocs/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html) that will be used by authentication manager for password encryption and matching
   * detection and use of application provided custom UserDetailsService bean from application context
@@ -102,6 +103,9 @@ Resource servers can verify an access token as following:
     ```
 
 # Revision History
+## Version 0.0.6
+Added support for using custom application provided token store service bean from application context.
+
 ## Version 0.0.5
 Added support for using custom application provided authorization code service from application context.
 
