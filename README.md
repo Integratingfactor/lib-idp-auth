@@ -17,11 +17,11 @@ This release has following 2 `@Configuration` beans:
     * authority : `ROLE_CLIENT`  
     * scope : `read`  
     * resourceId : `test-resource`  
-  * detection and use of application provided implementation of [TokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/TokenStore.html) service from application context. If none provided then a default token store [InMemoryTokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/store/InMemoryTokenStore.html) is used.  
+  * detection and use of application provided implementation of [TokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/TokenStore.html) service from application context. If none provided then a default token store [InMemoryTokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/store/InMemoryTokenStore.html) is used.
+  * detection and use of application provided custom user approval handler bean from application context. If none provided then default implementations are used  
 * `SecurityConfig` : this bean provides following configurations:
   * a bean reference to [BCryptPasswordEncoder](http://docs.spring.io/spring-security/site/docs/3.2.9.RELEASE/apidocs/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html) that will be used by authentication manager for password encryption and matching
   * detection and use of application provided custom UserDetailsService bean from application context
-  * detection and use of application provided custom user approval handler bean from application context
   * a very basic proof-of-concept spring security profile using default configuration from Spring Security Framework and following hard coded user details:
   * username/password : `user`/`password`, roles : `USER`
   * username/password : `admin`/`password`, roles : `USER`, `ADMIN`
