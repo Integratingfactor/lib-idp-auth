@@ -21,6 +21,7 @@ This release has following 2 `@Configuration` beans:
 * `SecurityConfig` : this bean provides following configurations:
   * a bean reference to [BCryptPasswordEncoder](http://docs.spring.io/spring-security/site/docs/3.2.9.RELEASE/apidocs/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html) that will be used by authentication manager for password encryption and matching
   * detection and use of application provided custom UserDetailsService bean from application context
+  * detection and use of application provided custom user approval handler bean from application context
   * a very basic proof-of-concept spring security profile using default configuration from Spring Security Framework and following hard coded user details:
   * username/password : `user`/`password`, roles : `USER`
   * username/password : `admin`/`password`, roles : `USER`, `ADMIN`
@@ -34,7 +35,7 @@ This release has following 2 `@Configuration` beans:
 <dependency>
    <groupId>com.integratingfactor.idp</groupId>
    <artifactId>lib-idp-auth</artifactId>
-   <version>0.0.3-SNAPSHOT</version>
+   <version>0.0.7-SNAPSHOT</version>
 </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
@@ -103,6 +104,9 @@ Resource servers can verify an access token as following:
     ```
 
 # Revision History
+## Version 0.0.7
+Added support for using custom application provided user approval handler bean from application context.
+
 ## Version 0.0.6
 Added support for using custom application provided token store service bean from application context.
 
