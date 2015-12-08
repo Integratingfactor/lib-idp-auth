@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.approval.UserApprovalHandler;
 import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
@@ -33,6 +34,8 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
     AuthorizationCodeServices authCodeService;
     
     TokenStore tokenStore;
+
+    UserApprovalHandler approvalHandler;
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
@@ -67,6 +70,11 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
 		if (tokenStore != null) {
 			endpoints.tokenStore(tokenStore);
 		}
+
+        // use application's user approval handler if provided
+        if (approvalHandler != null) {
+            endpoints.userApprovalHandler(approvalHandler);
+        }
     }
 
     @Override
@@ -90,5 +98,15 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
 		} catch (Exception e) {
 			LOG.info("Caught exception: " + e.getMessage());
 		}
+
+        approvalHandler = null;
+        try {
+            approvalHandler = ctx.getBean(UserApprovalHandler.class);
+            LOG.info("Using custom application provided user approval handler: " + approvalHandler.toString());
+        } catch (BeansException e) {
+            LOG.info("No custom application provided user approval handler: " + e.getMessage());
+        } catch (Exception e) {
+            LOG.info("Caught exception: " + e.getMessage());
+        }
     }
 }
