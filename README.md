@@ -37,7 +37,7 @@ Additionally, library declares an interface `HttpSecurityWhiteLabelOverride` tha
 <dependency>
    <groupId>com.integratingfactor.idp</groupId>
    <artifactId>lib-idp-auth</artifactId>
-   <version>0.0.7-SNAPSHOT</version>
+   <version>0.0.8-SNAPSHOT</version>
 </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
