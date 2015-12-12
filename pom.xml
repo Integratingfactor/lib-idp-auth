@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.integratingfactor.idp</groupId>
   <artifactId>lib-idp-auth</artifactId>
-  <version>0.0.7-SNAPSHOT</version>
+  <version>0.0.8-SNAPSHOT</version>
   <name>Integratingfactor IDP Authorization Server Library</name>
   <description>Integratingfactor IDP Authorization Server Library</description>
   <properties>
