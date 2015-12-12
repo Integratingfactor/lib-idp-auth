@@ -24,7 +24,9 @@ This release has following 2 `@Configuration` beans:
   * detection and use of application provided custom UserDetailsService bean from application context
   * a very basic proof-of-concept spring security profile using default configuration from Spring Security Framework and following hard coded user details:
   * username/password : `user`/`password`, roles : `USER`
-  * username/password : `admin`/`password`, roles : `USER`, `ADMIN`
+  * username/password : `admin`/`password`, roles : `USER`, `ADMIN`  
+
+Additionally, library declares an interface `HttpSecurityWhiteLabelOverride` that can be used to implement override to default URLs used by HTTP security.
 
 ## How to implement authorization server with this release?
 * Clone or download project.  
@@ -104,6 +106,9 @@ Resource servers can verify an access token as following:
     ```
 
 # Revision History
+## Version 0.0.8
+Added interface declaration to override white label default URLs for HTTP security
+
 ## Version 0.0.7
 Added support for using custom application provided user approval handler bean from application context.
 
