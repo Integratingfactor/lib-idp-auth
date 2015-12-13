@@ -2,6 +2,7 @@ package com.integratingfactor.idp.lib.config;
 
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -10,12 +11,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
+
+import com.integratingfactor.idp.lib.overrides.HttpSecurityWhiteLabelOverride;
 
 @Configuration
 @EnableWebSecurity
@@ -29,6 +33,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
 
     UserDetailsService userDetailsService;
 
+    HttpSecurityWhiteLabelOverride override = null;
+
     @Override
     public void setApplicationContext(ApplicationContext ctx) {
         super.setApplicationContext(ctx);
@@ -38,6 +44,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
             LOG.info("Using custom application provided user details service: " + userDetailsService.toString());
         } catch (BeansException e) {
             LOG.info("No custom application provided user details service: " + e.getMessage());
+        } catch (Exception e) {
+            LOG.info("Caught exception: " + e.getMessage());
+        }
+        try {
+            override = ctx.getBean(HttpSecurityWhiteLabelOverride.class);
+            LOG.info("Using application overrides on white label URLs " + override.toString());
+        } catch (BeansException e) {
+            LOG.info("No custom application provided override service: " + e.getMessage());
         } catch (Exception e) {
             LOG.info("Caught exception: " + e.getMessage());
         }
@@ -51,6 +65,62 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
         } else {
             LOG.info("Providing super's user details service....");
             return super.userDetailsService();
+        }
+    }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+
+        if (override == null) {
+            LOG.info("using default security configuration");
+            super.configure(http);
+        } else {
+            // start with initializing form login for all requests
+            LOG.info("configuring form login ...");
+            http.authorizeRequests().anyRequest().authenticated().and().formLogin();
+
+            // override login page url if provided
+            if (StringUtils.isNotEmpty(override.getLoginPageUrl())) {
+                LOG.info("overriding white label login page url to: " + override.getLoginPageUrl()
+                        + " permitting all..");
+                http.formLogin().loginPage(override.getLoginPageUrl()).permitAll();
+            }
+
+            // override login processing url if provided
+            if (StringUtils.isNotEmpty(override.getLoginProcessingUrl())) {
+                LOG.info("overriding white label login processing url to: " + override.getLoginProcessingUrl());
+                http.formLogin().loginProcessingUrl(override.getLoginProcessingUrl());
+            }
+
+            // override login success url if provided
+            if (StringUtils.isNotEmpty(override.getDefaultSuccessUrl())) {
+                LOG.info("overriding white label login success url to: " + override.getDefaultSuccessUrl());
+                http.formLogin().defaultSuccessUrl(override.getDefaultSuccessUrl());
+            }
+
+            // override form login username parameter name if provided
+            if (StringUtils.isNotEmpty(override.getUsernameParameter())) {
+                LOG.info("overriding white label form login username parameter: " + override.getUsernameParameter());
+                http.formLogin().usernameParameter(override.getUsernameParameter()).permitAll();
+            }
+
+            // override form login password parameter name if provided
+            if (StringUtils.isNotEmpty(override.getPasswordParameter())) {
+                LOG.info("overriding white label form login password parameter: " + override.getPasswordParameter());
+                http.formLogin().passwordParameter(override.getPasswordParameter()).permitAll();
+            }
+
+            // override logout processing url if provided
+            if (StringUtils.isNotEmpty(override.getLogoutUrl())) {
+                LOG.info("overriding white label logout processing url to: " + override.getLogoutUrl());
+                http.logout().logoutUrl(override.getLogoutUrl());
+            }
+
+            // override logout success url if provided
+            if (StringUtils.isNotEmpty(override.getLogoutSuccessUrl())) {
+                LOG.info("overriding white label logout success url to: " + override.getLogoutSuccessUrl());
+                http.logout().logoutSuccessUrl(override.getLogoutSuccessUrl()).permitAll();
+            }
         }
     }
 
