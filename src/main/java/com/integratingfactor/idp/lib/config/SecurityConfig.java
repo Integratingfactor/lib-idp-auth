@@ -76,12 +76,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
             super.configure(http);
         } else {
             // start with initializing form login for all requests
+            LOG.info("configuring form login ...");
             http.authorizeRequests().anyRequest().authenticated().and().formLogin();
 
             // override login page url if provided
             if (StringUtils.isNotEmpty(override.getLoginPageUrl())) {
-                LOG.info("overriding white label login page url to: " + override.getLoginPageUrl());
-                http.formLogin().loginPage(override.getLoginPageUrl());
+                LOG.info("overriding white label login page url to: " + override.getLoginPageUrl()
+                        + " permitting all..");
+                http.formLogin().loginPage(override.getLoginPageUrl()).permitAll();
             }
 
             // override login processing url if provided
@@ -96,6 +98,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
                 http.formLogin().defaultSuccessUrl(override.getDefaultSuccessUrl());
             }
 
+            // override form login username parameter name if provided
+            if (StringUtils.isNotEmpty(override.getUsernameParameter())) {
+                LOG.info("overriding white label form login username parameter: " + override.getUsernameParameter());
+                http.formLogin().usernameParameter(override.getUsernameParameter()).permitAll();
+            }
+
+            // override form login password parameter name if provided
+            if (StringUtils.isNotEmpty(override.getPasswordParameter())) {
+                LOG.info("overriding white label form login password parameter: " + override.getPasswordParameter());
+                http.formLogin().passwordParameter(override.getPasswordParameter()).permitAll();
+            }
+
             // override logout processing url if provided
             if (StringUtils.isNotEmpty(override.getLogoutUrl())) {
                 LOG.info("overriding white label logout processing url to: " + override.getLogoutUrl());
@@ -105,7 +119,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
             // override logout success url if provided
             if (StringUtils.isNotEmpty(override.getLogoutSuccessUrl())) {
                 LOG.info("overriding white label logout success url to: " + override.getLogoutSuccessUrl());
-                http.logout().logoutSuccessUrl(override.getLogoutSuccessUrl());
+                http.logout().logoutSuccessUrl(override.getLogoutSuccessUrl()).permitAll();
             }
         }
     }

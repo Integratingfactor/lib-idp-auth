@@ -62,7 +62,9 @@ public class HttpSecurityWhiteLabelOverrideTest extends AbstractTestNGSpringCont
     public void testHttpLoginProcessingPageOverride() throws Exception {
         // perform a form login on the custom login processing url
         String redirectUrl = this.mockMvc
-                .perform(SecurityMockMvcRequestBuilders.formLogin(TestHttpSecurityEndpoint.LoginProcessingUrl))
+                .perform(SecurityMockMvcRequestBuilders.formLogin(TestHttpSecurityEndpoint.LoginProcessingUrl)
+                        .userParameter(TestHttpSecurityEndpoint.UsernameParameter)
+                        .passwordParam(TestHttpSecurityEndpoint.PasswordParameter))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                 .andExpect(SecurityMockMvcResultMatchers.authenticated().withUsername("user")).andReturn().getResponse()
                 .getRedirectedUrl();

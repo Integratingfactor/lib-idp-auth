@@ -18,8 +18,18 @@ package com.integratingfactor.idp.lib.overrides;
 public interface HttpSecurityWhiteLabelOverride {
 
     /**
+     * <p>
      * method to override white label login page url "/login". Application is
      * required to process the specified URL to generate a login page.
+     * </p>
+     * <p>
+     * Any unsuccessful authentication will also get redirected to same URL with
+     * additional parameter "?error"
+     * </p>
+     * <p>
+     * <strong>Note: if custom login page url is used, then login processing url
+     * will also be set to the same, unless a different url is explicitly
+     * specified with {@link #getLoginProcessingUrl()}
      * 
      * @see {@link org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer#loginPage(String)}
      * 
