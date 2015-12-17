@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.provider.approval.UserApprovalHandler
 import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 @Configuration
 @EnableAuthorizationServer
@@ -42,8 +43,13 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        LOG.info("enabling /check_token access for all");
-        security.checkTokenAccess("permitAll()");
+        if (tokenEnhancer != null && tokenEnhancer instanceof JwtAccessTokenConverter) {
+            LOG.info("JWT detected -- enabling /token_key access for all and /check_token is disabled");
+            security.tokenKeyAccess("permitAll()");
+        } else {
+            LOG.info("enabling /check_token access for all");
+            security.checkTokenAccess("permitAll()");
+        }
     }
 
     @Override

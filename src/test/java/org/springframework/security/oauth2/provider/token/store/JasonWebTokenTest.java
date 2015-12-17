@@ -1,6 +1,7 @@
-package com.integratingfactor.idp.lib.tokenenhancer;
+package org.springframework.security.oauth2.provider.token.store;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,9 @@ import org.springframework.security.oauth2.provider.AuthorizationRequest;
 import org.springframework.security.oauth2.provider.endpoint.AuthorizationEndpoint;
 import org.springframework.security.oauth2.provider.endpoint.CheckTokenEndpoint;
 import org.springframework.security.oauth2.provider.endpoint.TokenEndpoint;
+import org.springframework.security.oauth2.provider.endpoint.TokenKeyEndpoint;
 import org.springframework.security.oauth2.provider.endpoint.WhitelabelApprovalEndpoint;
+import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -30,9 +33,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integratingfactor.idp.lib.config.OAuth2AuthServerConfig;
 import com.integratingfactor.idp.lib.config.SecurityConfig;
 
-@ContextConfiguration(classes = { OAuth2AuthServerConfig.class, SecurityConfig.class, TestTokenEnhancerConfig.class })
+@ContextConfiguration(classes = { OAuth2AuthServerConfig.class, SecurityConfig.class, TestJWTConfig.class })
 @WebAppConfiguration
-public class CustomTokenStoreTest extends AbstractTestNGSpringContextTests {
+public class JasonWebTokenTest extends AbstractTestNGSpringContextTests {
     @Autowired
     AuthorizationEndpoint authEndPoint;
 
@@ -46,10 +49,16 @@ public class CustomTokenStoreTest extends AbstractTestNGSpringContextTests {
     WhitelabelApprovalEndpoint approvalEndpoint;
 
     @Autowired
+    TokenKeyEndpoint tokenKey;
+
+    @Autowired
     SecurityConfig securityConfig;
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    JwtAccessTokenConverter jwt;
 
     private MockMvc mockMvc;
     static String testClientId = "if.test.client";
@@ -59,7 +68,7 @@ public class CustomTokenStoreTest extends AbstractTestNGSpringContextTests {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         this.mockMvc = MockMvcBuilders
-                .standaloneSetup(authEndPoint, tokenEndpoint, checkTokenEndPoint, approvalEndpoint).build();
+                .standaloneSetup(authEndPoint, tokenEndpoint, checkTokenEndPoint, approvalEndpoint, tokenKey).build();
     }
 
     private String uriForAuthcodeTokenRequest() {
@@ -67,7 +76,7 @@ public class CustomTokenStoreTest extends AbstractTestNGSpringContextTests {
     }
 
     @Test
-    public void testCustomTokenEnhancerIsUsed() throws Exception {
+    public void testJwtIsUsedInTokenGrantEndPoint() throws Exception {
         // get a valid authorization code from /oauth/authorize endpoint
         String[] params = this.mockMvc
                 .perform(MockMvcRequestBuilders.post("/oauth/authorize")
@@ -92,9 +101,41 @@ public class CustomTokenStoreTest extends AbstractTestNGSpringContextTests {
         System.out.println("Got response: " + response);
         OAuth2AccessToken token = new ObjectMapper().readValue(response, OAuth2AccessToken.class);
 
-        // verify that our test token enhancer added custom token attribute
-        Assert.assertEquals(token.getAdditionalInformation().get(TestTokenEnhancer.TestCustomAttribute),
-                TestTokenEnhancer.TestCustomValue);
-        Assert.assertTrue(token.getExpiresIn() <= TestTokenEnhancer.TestExpirySecs);
+        // verify that token is of type JWT
+        Assert.assertNotNull(token.getAdditionalInformation().get(JwtAccessTokenConverter.TOKEN_ID));
+
+        // verify that token value can be decoded correctly
+        Map<String, Object> decodedToken = jwt.decode(token.getValue());
+        System.out.println("Decoded Token is: " + new ObjectMapper().writeValueAsString(decodedToken));
+        Assert.assertEquals(decodedToken.get(AccessTokenConverter.CLIENT_ID), testClientId);
+    }
+
+    @Test
+    public void testJwtIsUsedInTokenKeyEndPoint() throws Exception {
+        // perform GET to /oauth/check_token endpoint with client
+        // authentication
+        ResultActions result = this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/oauth/token_key")
+                        .principal(new UsernamePasswordAuthenticationToken(testClientId, "",
+                                Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")))))
+                // we expect a 200 success
+                .andExpect(MockMvcResultMatchers.status().is(200));
+        Map<?, ?> tokenKey = new ObjectMapper().readValue(result.andReturn().getResponse().getContentAsString(),
+                Map.class);
+        System.out.println("Got response: " + result.andReturn().getResponse().getContentAsString());
+        Assert.assertEquals(tokenKey.get("value"), TestJWTConfig.SignKey);
+    }
+
+    // TODO: figure out how to test this, currently security policy is not
+    // applying and hence all access are enabled in unit tests
+    // @Test
+    public void testCheckTokenEndPointIsDisabled() throws Exception {
+        // perform POST to /oauth/check_token endpoint with authentication
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post("/oauth/check_token").param("token", "some random value")
+                        .principal(new UsernamePasswordAuthenticationToken(testClientId, "",
+                                Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")))))
+                // we expect a 403 not authorized
+                .andExpect(MockMvcResultMatchers.status().is(403));
     }
 }

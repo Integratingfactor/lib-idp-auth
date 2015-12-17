@@ -20,6 +20,7 @@ This release has following 2 `@Configuration` beans:
   * detection and use of application provided implementation of [TokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/TokenStore.html) service from application context. If none provided then a default token store [InMemoryTokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/store/InMemoryTokenStore.html) is used.
   * detection and use of application provided custom user approval handler bean from application context. If none provided then default implementations are used  
   * detection and use of application provided custom token enhancer bean from application context. If none provided then default implementations are used
+  * support for JWT if application provides token enhancer bean instance of [JwtAccessTokenConverter](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/store/JwtAccessTokenConverter.html)  
 * `SecurityConfig` : this bean provides following configurations:
   * a bean reference to [BCryptPasswordEncoder](http://docs.spring.io/spring-security/site/docs/3.2.9.RELEASE/apidocs/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html) that will be used by authentication manager for password encryption and matching
   * detection and use of application provided custom UserDetailsService bean from application context
@@ -43,7 +44,7 @@ Above steps should install the library into your local maven repository, and you
 <dependency>
    <groupId>com.integratingfactor.idp</groupId>
    <artifactId>lib-idp-auth</artifactId>
-   <version>0.0.9-SNAPSHOT</version>
+   <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
@@ -113,6 +114,9 @@ Resource servers can verify an access token as following:
     ```
 
 # Revision History
+## Version 0.1.0
+Added support for Jason Web Tokens (Refer to unit tests for example)
+
 ## Version 0.0.9
 Added support for using custom application provided token enhancer for access token grant
 
