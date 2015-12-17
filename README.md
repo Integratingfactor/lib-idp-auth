@@ -19,6 +19,7 @@ This release has following 2 `@Configuration` beans:
     * resourceId : `test-resource`  
   * detection and use of application provided implementation of [TokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/TokenStore.html) service from application context. If none provided then a default token store [InMemoryTokenStore](http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/store/InMemoryTokenStore.html) is used.
   * detection and use of application provided custom user approval handler bean from application context. If none provided then default implementations are used  
+  * detection and use of application provided custom token enhancer bean from application context. If none provided then default implementations are used
 * `SecurityConfig` : this bean provides following configurations:
   * a bean reference to [BCryptPasswordEncoder](http://docs.spring.io/spring-security/site/docs/3.2.9.RELEASE/apidocs/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.html) that will be used by authentication manager for password encryption and matching
   * detection and use of application provided custom UserDetailsService bean from application context
@@ -28,16 +29,21 @@ This release has following 2 `@Configuration` beans:
 
 Additionally, library declares an interface `HttpSecurityWhiteLabelOverride` that can be used to implement override to default URLs used by HTTP security.
 
+## How to build this project
+* Clone or download project
+* Build and install project library: `mvn install`
+
+Above steps should install the library into your local maven repository, and you should be able to use it in your application as described below.
+
 ## How to implement authorization server with this release?
-* Clone or download project.  
-* Build and install project library: `mvn install`  
+* download and build project as described above
 * Add following dependencies into your maven project:
 ```XML
 <!-- iF IDP Library -->
 <dependency>
    <groupId>com.integratingfactor.idp</groupId>
    <artifactId>lib-idp-auth</artifactId>
-   <version>0.0.8-SNAPSHOT</version>
+   <version>0.0.9-SNAPSHOT</version>
 </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
@@ -50,9 +56,10 @@ Additionally, library declares an interface `HttpSecurityWhiteLabelOverride` tha
 
   <!-- Configure security beans -->  
   <bean id="idpSecurityService" class="com.integratingfactor.idp.lib.config.SecurityConfig"/>
-  ```
+  ```  
+  **Note: Spring Security filter only works with resources that are served by DispatcherServlet. So, if you have any static resources being served by default container servlet (e.g. `welcome-file-list`), then they will not be subject to spring security checks.**  
 
-**Note: Spring Security filter only works with resources that are served by DispatcherServlet. So, if you have any static resources being served by default container servlet (e.g. `welcome-file-list`), then they will not be subject to spring security checks.**
+Application will need to provide any additional bean declarations required to override default behavior/settings. Refer to unit tests for examples on how to do that.
 
 ## How to get acces token from a client?
 Getting access token for a client is a 2 step process:
@@ -106,6 +113,9 @@ Resource servers can verify an access token as following:
     ```
 
 # Revision History
+## Version 0.0.9
+Added support for using custom application provided token enhancer for access token grant
+
 ## Version 0.0.8
 Added interface declaration to override white label default URLs for HTTP security
 
