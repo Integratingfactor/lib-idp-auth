@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.approval.UserApprovalHandler;
 import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
+import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
@@ -88,6 +89,10 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
         // use application's token enhancer if provided
         if (tokenEnhancer != null) {
             endpoints.tokenEnhancer(tokenEnhancer);
+            // seems like there is bug, if token enhancer is specified, then
+            // token converter need to be specified explicitly
+            LOG.info("Adding DefaultAccessTokenConverter into endpoints configuration");
+            endpoints.accessTokenConverter(new DefaultAccessTokenConverter());
         }
     }
 
