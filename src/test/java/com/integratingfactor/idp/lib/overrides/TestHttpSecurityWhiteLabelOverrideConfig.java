@@ -14,4 +14,10 @@ public class TestHttpSecurityWhiteLabelOverrideConfig {
         LOG.info("Creating new bean instance TestHttpSecurityEndpoint");
         return new TestHttpSecurityEndpoint();
     }
+
+    @Bean
+    public TestCustomAuthenticationFilter customAuthenticationFilter() {
+        LOG.info("Creating new bean instance TestCustomAuthenticationFilter");
+        return new TestCustomAuthenticationFilter();
+    }
 }

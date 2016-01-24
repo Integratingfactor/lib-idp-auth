@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.integratingfactor.idp</groupId>
   <artifactId>lib-idp-auth</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.1-SNAPSHOT</version>
   <name>Integratingfactor IDP Authorization Server Library</name>
   <description>Integratingfactor IDP Authorization Server Library</description>
   <properties>
@@ -92,6 +92,12 @@
     <artifactId>mockito-all</artifactId>
     <version>1.9.5</version>
     <scope>test</scope>
+   </dependency>
+   <dependency>
+		<groupId>log4j</groupId>
+		<artifactId>log4j</artifactId>
+		<version>1.2.17</version>
+	    <scope>test</scope>
    </dependency>
   </dependencies>
  

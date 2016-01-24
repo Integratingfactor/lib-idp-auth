@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 
 import com.integratingfactor.idp.lib.overrides.HttpSecurityWhiteLabelOverride;
+import com.integratingfactor.idp.lib.overrides.IdpAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -34,10 +36,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
     UserDetailsService userDetailsService;
 
     HttpSecurityWhiteLabelOverride override = null;
+    
+    IdpAuthenticationFilter customAuthentication = null;
 
-    @Override
-    public void setApplicationContext(ApplicationContext ctx) {
-        super.setApplicationContext(ctx);
+    String filterUrl = null;
+
+    ApplicationContext ctx;
+
+    private void getOverrides() {
         userDetailsService = null;
         try {
             userDetailsService = ctx.getBean(UserDetailsService.class);
@@ -55,6 +61,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
         } catch (Exception e) {
             LOG.info("Caught exception: " + e.getMessage());
         }
+        try {
+            customAuthentication = ctx.getBean(IdpAuthenticationFilter.class);
+            LOG.info("Found custom application provided authentication filter: " + customAuthentication.toString());
+            filterUrl = customAuthentication.getFilterUrl();
+        } catch (BeansException e) {
+            LOG.info("No custom application provided authentication filter: " + e.getMessage());
+        } catch (Exception e) {
+            LOG.info("Caught exception: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext ctx) {
+        super.setApplicationContext(ctx);
+        this.ctx = ctx;
+
+        // get all overrides
+        getOverrides();
     }
 
     @Override
@@ -70,14 +94,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
         if (override == null) {
             LOG.info("using default security configuration");
             super.configure(http);
         } else {
             // start with initializing form login for all requests
             LOG.info("configuring form login ...");
-            http.authorizeRequests().anyRequest().authenticated().and().formLogin();
+            if (filterUrl == null) {
+                LOG.info("permitting unauthenticated access to: " + "/, " + "/resources/**, " + "/about/**");
+                http.authorizeRequests().antMatchers("/", "/resources/**", "/about/**").permitAll().anyRequest()
+                        .authenticated().and().formLogin();
+
+            } else {
+                LOG.info("permitting unauthenticated access to: " + "/, " + "/resources/**, " + "/about/**, "
+                        + filterUrl);
+                http.authorizeRequests().antMatchers("/", "/resources/**", "/about/**", filterUrl).permitAll()
+                        .anyRequest()
+                        .authenticated().and().formLogin();
+            }
 
             // override login page url if provided
             if (StringUtils.isNotEmpty(override.getLoginPageUrl())) {
@@ -120,6 +154,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
             if (StringUtils.isNotEmpty(override.getLogoutSuccessUrl())) {
                 LOG.info("overriding white label logout success url to: " + override.getLogoutSuccessUrl());
                 http.logout().logoutSuccessUrl(override.getLogoutSuccessUrl()).permitAll();
+            }
+
+            // add custom authentication filter if provided
+            if (customAuthentication != null) {
+                LOG.info("Adding custom authentication filter " + customAuthentication.getClass().getName() + " before "
+                        + customAuthentication.getNextFilter().getName());
+                http.addFilterBefore(customAuthentication, customAuthentication.getNextFilter());
             }
         }
     }

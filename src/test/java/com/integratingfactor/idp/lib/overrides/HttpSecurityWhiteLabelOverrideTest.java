@@ -2,14 +2,18 @@ package com.integratingfactor.idp.lib.overrides;
 
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders;
 import org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.security.web.FilterChainProxy;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -29,10 +33,18 @@ public class HttpSecurityWhiteLabelOverrideTest extends AbstractTestNGSpringCont
     @Autowired
     private WebApplicationContext context;
 
+    @Autowired
+    private FilterChainProxy springSecurityFilterChain;
+
+    @Autowired
+    private TestCustomAuthenticationFilter authFilter;
+
     @BeforeMethod
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(SecurityMockMvcConfigurers.springSecurity())
+        SecurityContextHolder.clearContext();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(context).addFilters(springSecurityFilterChain)
+                .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
     }
 
@@ -81,6 +93,26 @@ public class HttpSecurityWhiteLabelOverrideTest extends AbstractTestNGSpringCont
                 .getRedirectedUrl();
         System.out.println("Logout attempt redirected to: " + redirectUrl);
         Assert.assertTrue(redirectUrl.contains(TestHttpSecurityEndpoint.LogoutSuccessUrl));
-
     }
+
+    @Test
+    public void testCustomAuthenticationFilter() throws Exception {
+        // reset the filter usage
+        authFilter.reset();
+
+        // perform a login to get valid csrf token
+        MvcResult login = this.mockMvc.perform(MockMvcRequestBuilders.get("/some/random/url"))
+                .andExpect(MockMvcResultMatchers.status().is3xxRedirection()).andReturn();
+
+        CsrfToken csrf = (CsrfToken) login.getRequest().getAttribute("_csrf");
+        System.out.println("CSRF token: " + csrf.getToken());
+
+        // now perform another get by reusing the session and this time should
+        // not go to filter
+        this.mockMvc.perform(MockMvcRequestBuilders.post(TestCustomAuthenticationFilter.TestAuthenticationFilterUrl)
+                .param("_csrf", csrf.getToken()).session((MockHttpSession) login.getRequest().getSession()));
+
+        Assert.assertTrue(authFilter.isUsed());
+    }
+
 }
