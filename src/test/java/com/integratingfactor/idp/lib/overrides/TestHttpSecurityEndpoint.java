@@ -36,6 +36,8 @@ public class TestHttpSecurityEndpoint implements HttpSecurityWhiteLabelOverride 
 
     public static final String ProtectedResource = "/test/something/secret";
 
+    public static final String[] PublicResources = { "/", "/resources/**" };
+
     @Override
     public String getLoginPageUrl() {
         return LoginPageUrl;
@@ -203,5 +205,10 @@ public class TestHttpSecurityEndpoint implements HttpSecurityWhiteLabelOverride 
         sb.append("</body></html>");
 
         return sb.toString();
+    }
+
+    @Override
+    public String[] getPublicUrls() {
+        return PublicResources;
     }
 }

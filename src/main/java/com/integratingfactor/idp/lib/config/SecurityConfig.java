@@ -4,7 +4,6 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -15,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -98,26 +98,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Appl
             LOG.info("using default security configuration");
             super.configure(http);
         } else {
-            // start with initializing form login for all requests
-            LOG.info("configuring form login ...");
-            if (filterUrl == null) {
-                LOG.info("permitting unauthenticated access to: " + "/, " + "/resources/**, " + "/about/**");
-                http.authorizeRequests().antMatchers("/", "/resources/**", "/about/**").permitAll().anyRequest()
-                        .authenticated().and().formLogin();
-
-            } else {
-                LOG.info("permitting unauthenticated access to: " + "/, " + "/resources/**, " + "/about/**, "
-                        + filterUrl);
-                http.authorizeRequests().antMatchers("/", "/resources/**", "/about/**", filterUrl).permitAll()
-                        .anyRequest()
-                        .authenticated().and().formLogin();
+            // start with adding permit all for public resources
+            ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlPolicy = null;
+            if (override.getPublicUrls() != null) {
+                for (String url : override.getPublicUrls()) {
+                    LOG.info("permitting unauthenticated access to: " + url);
+                    urlPolicy = urlPolicy == null ? http.authorizeRequests().antMatchers(url).permitAll()
+                            : urlPolicy.antMatchers(url).permitAll();
+                }
             }
+            if (filterUrl != null) {
+                LOG.info("permitting unauthenticated access to filterUrl: " + filterUrl);
+                urlPolicy = urlPolicy == null ? http.authorizeRequests().antMatchers(filterUrl).permitAll()
+                        : urlPolicy.antMatchers(filterUrl).permitAll();
+            }
+            LOG.info("configuring form login ...");
+            urlPolicy = urlPolicy == null ? http.authorizeRequests() : urlPolicy;
+            urlPolicy.anyRequest().authenticated().and().formLogin();
 
             // override login page url if provided
             if (StringUtils.isNotEmpty(override.getLoginPageUrl())) {
                 LOG.info("overriding white label login page url to: " + override.getLoginPageUrl()
                         + " permitting all..");
-                http.formLogin().loginPage(override.getLoginPageUrl()).permitAll();
+                http.formLogin().loginPage(override.getLoginPageUrl());
             }
 
             // override login processing url if provided

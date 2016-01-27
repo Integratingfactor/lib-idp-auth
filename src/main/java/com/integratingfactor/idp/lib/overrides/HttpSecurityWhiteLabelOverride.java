@@ -18,6 +18,15 @@ package com.integratingfactor.idp.lib.overrides;
 public interface HttpSecurityWhiteLabelOverride {
 
     /**
+     * method to provide an array of url patterns that can be allowed without
+     * any authentication, e.g., resource files, login page, welcome/landing
+     * page etc.
+     * 
+     * @return
+     */
+    String[] getPublicUrls();
+
+    /**
      * <p>
      * method to override white label login page url "/login". Application is
      * required to process the specified URL to generate a login page.

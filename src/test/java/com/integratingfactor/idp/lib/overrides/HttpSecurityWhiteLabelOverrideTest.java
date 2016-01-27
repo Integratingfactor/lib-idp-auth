@@ -49,6 +49,23 @@ public class HttpSecurityWhiteLabelOverrideTest extends AbstractTestNGSpringCont
     }
 
     @Test
+    public void testPublicResourcesOverride() throws Exception {
+        // clear security context to simulate unauthenticated session
+        SecurityContextHolder.clearContext();
+
+        // perform a get request to public resources
+        for (String url : TestHttpSecurityEndpoint.PublicResources) {
+            // we are expecting 404 not found (since no controller) and not a
+            // redirect to login page
+            String redirectUrl = this.mockMvc.perform(MockMvcRequestBuilders.get(url))
+                    .andExpect(MockMvcResultMatchers.status().isNotFound()).andReturn().getResponse()
+                    .getRedirectedUrl();
+            System.out.println("Login redirection to: " + redirectUrl);
+            Assert.assertNull(redirectUrl);
+        }
+    }
+
+    @Test
     public void testHttpLoginPageOverride() throws Exception {
         // clear security context to simulate unauthenticated session
         SecurityContextHolder.clearContext();
