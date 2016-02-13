@@ -44,7 +44,7 @@ Above steps should install the library into your local maven repository, and you
 <dependency>
    <groupId>com.integratingfactor.idp</groupId>
    <artifactId>lib-idp-auth</artifactId>
-   <version>0.1.0-SNAPSHOT</version>
+   <version>0.1.2-SNAPSHOT</version>
 </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
