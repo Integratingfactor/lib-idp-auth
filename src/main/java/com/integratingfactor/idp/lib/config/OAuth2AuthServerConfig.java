@@ -45,12 +45,11 @@ public class OAuth2AuthServerConfig extends AuthorizationServerConfigurerAdapter
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
         if (tokenEnhancer != null && tokenEnhancer instanceof JwtAccessTokenConverter) {
-            LOG.info("JWT detected -- enabling /token_key access for all and /check_token is disabled");
+            LOG.info("JWT detected -- enabling /token_key access for all");
             security.tokenKeyAccess("permitAll()");
-        } else {
-            LOG.info("enabling /check_token access for all");
-            security.checkTokenAccess("permitAll()");
         }
+        LOG.info("securing token validation endpoint for full authentication");
+        security.checkTokenAccess("isFullyAuthenticated()");
     }
 
     @Override
